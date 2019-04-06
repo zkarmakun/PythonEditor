@@ -4,26 +4,26 @@ It is a python editor inbuilt in unreal engine to generate and execute scripts
 
 How to Install...
 
-  1.- Clone or download a copy of the plugin
+    1.- Clone or download a copy of the plugin
   
-  2.- Pasted inside your project's Plugins folder
+    2.- Pasted inside your project's Plugins folder
   
-  3.- Compile
+    3.- Compile
   
-  4.- Open your project
+    4.- Open your project
   
  
 How to Install for Blueprinters...
 
 if you are a rookie for c++, you don't have to use it
 
-  1.- donwload a copy of the plugin
+    1.- donwload a copy of the plugin
   
-  2.- Extract the content of the 7z file contained in the CompressedBinary folder
+    2.- Extract the content of the 7z file contained in the CompressedBinary folder
   
-  3.- Pasted inside your project's Plugins folder
+    3.- Pasted inside your project's Plugins folder
   
-  4.- Open your project
+    4.- Open your project
   
  
 Known problems and limitations:
