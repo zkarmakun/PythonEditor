@@ -1,8 +1,0 @@
-{
-	"BuildId": "5660361",
-	"Modules": 
-	{
-		"PythonEditor": "UE4Editor-PythonEditor.dll",
-		"PythonUtilities": "UE4Editor-PythonUtilities.dll"
-	}
-}
