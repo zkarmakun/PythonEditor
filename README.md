@@ -3,6 +3,7 @@
 It is a python editor inbuilt in unreal engine to generate and execute scripts
 
 How to Install...
+
   1.- Clone or download a copy of the plugin
   
   2.- Pasted inside your project's Plugins folder
