@@ -1,0 +1,81 @@
+C:\Users\Jorge\Documents\Unreal Projects\PythonExample\Plugins\PythonEditor\Intermediate\Build\Win64\UE4Editor\Development\PythonUtilities\Definitions.PythonUtilities.h
+C:\Users\Jorge\Documents\Unreal Projects\PythonExample\Plugins\PythonEditor\Intermediate\Build\Win64\UE4Editor\Inc\PythonUtilities\PyMenu.gen.cpp
+C:\Program Files\Epic Games\UE_4.22\Engine\Source\Runtime\CoreUObject\Public\UObject/GeneratedCppIncludes.h
+C:\Program Files\Epic Games\UE_4.22\Engine\Source\Runtime\CoreUObject\Public\UObject/MetaData.h
+C:\Users\Jorge\Documents\Unreal Projects\PythonExample\Plugins\PythonEditor\Source\PythonUtilities/Public/PyMenu.h
+c:\users\jorge\documents\unreal projects\pythonexample\plugins\pythoneditor\intermediate\build\win64\ue4editor\inc\pythonutilities\PyMenu.generated.h
+C:\Users\Jorge\Documents\Unreal Projects\PythonExample\Plugins\PythonEditor\Intermediate\Build\Win64\UE4Editor\Inc\PythonUtilities\PythonUtilities.init.gen.cpp
+C:\Users\Jorge\Documents\Unreal Projects\PythonExample\Plugins\PythonEditor\Intermediate\Build\Win64\UE4Editor\Inc\PythonUtilities\PyTools.gen.cpp
+C:\Users\Jorge\Documents\Unreal Projects\PythonExample\Plugins\PythonEditor\Source\PythonUtilities/Public/PyTools.h
+c:\users\jorge\documents\unreal projects\pythonexample\plugins\pythoneditor\intermediate\build\win64\ue4editor\inc\pythonutilities\PyTools.generated.h
+C:\Users\Jorge\Documents\Unreal Projects\PythonExample\Plugins\PythonEditor\Intermediate\Build\Win64\UE4Editor\Inc\PythonUtilities\PyUnrealLib.gen.cpp
+C:\Users\Jorge\Documents\Unreal Projects\PythonExample\Plugins\PythonEditor\Source\PythonUtilities/Public/PyUnrealLib.h
+C:\Program Files\Epic Games\UE_4.22\Engine\Source\ThirdParty\Python\Win64\include\Python.h
+c:\program files\epic games\ue_4.22\engine\source\thirdparty\python\win64\include\patchlevel.h
+c:\program files\epic games\ue_4.22\engine\source\thirdparty\python\win64\include\pyconfig.h
+C:\Program Files (x86)\Windows Kits\10\include\10.0.17763.0\ucrt\io.h
+C:\Program Files (x86)\Windows Kits\10\include\10.0.17763.0\ucrt\corecrt_io.h
+C:\Program Files (x86)\Windows Kits\10\include\10.0.17763.0\shared\basetsd.h
+c:\program files\epic games\ue_4.22\engine\source\thirdparty\python\win64\include\pymacconfig.h
+C:\Program Files (x86)\Windows Kits\10\include\10.0.17763.0\ucrt\assert.h
+c:\program files\epic games\ue_4.22\engine\source\thirdparty\python\win64\include\pyport.h
+C:\Program Files (x86)\Windows Kits\10\include\10.0.17763.0\ucrt\math.h
+C:\Program Files (x86)\Windows Kits\10\include\10.0.17763.0\ucrt\time.h
+c:\program files\epic games\ue_4.22\engine\source\thirdparty\python\win64\include\pymath.h
+c:\program files\epic games\ue_4.22\engine\source\thirdparty\python\win64\include\pymem.h
+c:\program files\epic games\ue_4.22\engine\source\thirdparty\python\win64\include\object.h
+c:\program files\epic games\ue_4.22\engine\source\thirdparty\python\win64\include\objimpl.h
+c:\program files\epic games\ue_4.22\engine\source\thirdparty\python\win64\include\pydebug.h
+c:\program files\epic games\ue_4.22\engine\source\thirdparty\python\win64\include\unicodeobject.h
+c:\program files\epic games\ue_4.22\engine\source\thirdparty\python\win64\include\intobject.h
+c:\program files\epic games\ue_4.22\engine\source\thirdparty\python\win64\include\boolobject.h
+c:\program files\epic games\ue_4.22\engine\source\thirdparty\python\win64\include\longobject.h
+c:\program files\epic games\ue_4.22\engine\source\thirdparty\python\win64\include\floatobject.h
+c:\program files\epic games\ue_4.22\engine\source\thirdparty\python\win64\include\complexobject.h
+c:\program files\epic games\ue_4.22\engine\source\thirdparty\python\win64\include\rangeobject.h
+c:\program files\epic games\ue_4.22\engine\source\thirdparty\python\win64\include\stringobject.h
+c:\program files\epic games\ue_4.22\engine\source\thirdparty\python\win64\include\memoryobject.h
+c:\program files\epic games\ue_4.22\engine\source\thirdparty\python\win64\include\bufferobject.h
+c:\program files\epic games\ue_4.22\engine\source\thirdparty\python\win64\include\bytesobject.h
+c:\program files\epic games\ue_4.22\engine\source\thirdparty\python\win64\include\bytearrayobject.h
+c:\program files\epic games\ue_4.22\engine\source\thirdparty\python\win64\include\tupleobject.h
+c:\program files\epic games\ue_4.22\engine\source\thirdparty\python\win64\include\listobject.h
+c:\program files\epic games\ue_4.22\engine\source\thirdparty\python\win64\include\dictobject.h
+c:\program files\epic games\ue_4.22\engine\source\thirdparty\python\win64\include\enumobject.h
+c:\program files\epic games\ue_4.22\engine\source\thirdparty\python\win64\include\setobject.h
+c:\program files\epic games\ue_4.22\engine\source\thirdparty\python\win64\include\methodobject.h
+c:\program files\epic games\ue_4.22\engine\source\thirdparty\python\win64\include\moduleobject.h
+c:\program files\epic games\ue_4.22\engine\source\thirdparty\python\win64\include\funcobject.h
+c:\program files\epic games\ue_4.22\engine\source\thirdparty\python\win64\include\classobject.h
+c:\program files\epic games\ue_4.22\engine\source\thirdparty\python\win64\include\fileobject.h
+c:\program files\epic games\ue_4.22\engine\source\thirdparty\python\win64\include\cobject.h
+c:\program files\epic games\ue_4.22\engine\source\thirdparty\python\win64\include\pycapsule.h
+c:\program files\epic games\ue_4.22\engine\source\thirdparty\python\win64\include\traceback.h
+c:\program files\epic games\ue_4.22\engine\source\thirdparty\python\win64\include\sliceobject.h
+c:\program files\epic games\ue_4.22\engine\source\thirdparty\python\win64\include\cellobject.h
+c:\program files\epic games\ue_4.22\engine\source\thirdparty\python\win64\include\iterobject.h
+c:\program files\epic games\ue_4.22\engine\source\thirdparty\python\win64\include\genobject.h
+c:\program files\epic games\ue_4.22\engine\source\thirdparty\python\win64\include\descrobject.h
+c:\program files\epic games\ue_4.22\engine\source\thirdparty\python\win64\include\warnings.h
+c:\program files\epic games\ue_4.22\engine\source\thirdparty\python\win64\include\weakrefobject.h
+c:\program files\epic games\ue_4.22\engine\source\thirdparty\python\win64\include\codecs.h
+c:\program files\epic games\ue_4.22\engine\source\thirdparty\python\win64\include\pyerrors.h
+c:\program files\epic games\ue_4.22\engine\source\thirdparty\python\win64\include\pystate.h
+c:\program files\epic games\ue_4.22\engine\source\thirdparty\python\win64\include\pyarena.h
+c:\program files\epic games\ue_4.22\engine\source\thirdparty\python\win64\include\modsupport.h
+c:\program files\epic games\ue_4.22\engine\source\thirdparty\python\win64\include\pythonrun.h
+c:\program files\epic games\ue_4.22\engine\source\thirdparty\python\win64\include\ceval.h
+c:\program files\epic games\ue_4.22\engine\source\thirdparty\python\win64\include\sysmodule.h
+c:\program files\epic games\ue_4.22\engine\source\thirdparty\python\win64\include\intrcheck.h
+c:\program files\epic games\ue_4.22\engine\source\thirdparty\python\win64\include\import.h
+c:\program files\epic games\ue_4.22\engine\source\thirdparty\python\win64\include\abstract.h
+c:\program files\epic games\ue_4.22\engine\source\thirdparty\python\win64\include\compile.h
+c:\program files\epic games\ue_4.22\engine\source\thirdparty\python\win64\include\code.h
+c:\program files\epic games\ue_4.22\engine\source\thirdparty\python\win64\include\eval.h
+c:\program files\epic games\ue_4.22\engine\source\thirdparty\python\win64\include\pyctype.h
+c:\program files\epic games\ue_4.22\engine\source\thirdparty\python\win64\include\pystrtod.h
+c:\program files\epic games\ue_4.22\engine\source\thirdparty\python\win64\include\pystrcmp.h
+c:\program files\epic games\ue_4.22\engine\source\thirdparty\python\win64\include\dtoa.h
+c:\program files\epic games\ue_4.22\engine\source\thirdparty\python\win64\include\pyfpe.h
+C:\Program Files\Epic Games\UE_4.22\Engine\Source\ThirdParty\Python\Win64\include\structmember.h
+c:\users\jorge\documents\unreal projects\pythonexample\plugins\pythoneditor\intermediate\build\win64\ue4editor\inc\pythonutilities\PyUnrealLib.generated.h

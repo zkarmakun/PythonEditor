@@ -14,6 +14,7 @@
 #include "PythonEditorCommands.h"
 #include "PythonEditor.h"
 #include "SPythonDocumentation.h"
+#include "SPip.h"
 
 const FName FPythonEditorAppName = FName(TEXT("FPythonEditorApp"));
 TWeakPtr<FPythonEditorToolKit> FPythonEditorToolKit::PythonToolKit;
@@ -23,6 +24,7 @@ namespace FPythonToolKitNamespace
 	static const FName AppIdentifier("PythonEditorToolKit");
 	static const FName FileBrowserID("PythonFileBrowser");
 	static const FName WebBrowserID("PythonDocs");
+	static const FName PipID("Pip Install");
 	static const FName DetailsViewTab("PythonMainView");
 }
 
@@ -64,6 +66,11 @@ void FPythonEditorToolKit::RegisterTabSpawners(const TSharedRef<class FTabManage
 		.SetGroup(WorkspaceMenuCategoryRef)
 		.SetIcon(FSlateIcon(FEditorStyle::GetStyleSetName(), "LevelEditor.Tabs.Details"));
 
+	InTabManager->RegisterTabSpawner(FPythonToolKitNamespace::PipID, FOnSpawnTab::CreateSP(this, &FPythonEditorToolKit::HandleTabManagerSpawnTab, FPythonToolKitNamespace::PipID))
+		.SetDisplayName(FText::FromString("Pip Install"))
+		.SetGroup(WorkspaceMenuCategoryRef)
+		.SetIcon(FSlateIcon(FEditorStyle::GetStyleSetName(), "LevelEditor.Tabs.Details"));
+
 }
 
 void FPythonEditorToolKit::UnregisterTabSpawners(const TSharedRef<FTabManager>& InTabManager)
@@ -71,6 +78,7 @@ void FPythonEditorToolKit::UnregisterTabSpawners(const TSharedRef<FTabManager>& 
 	FAssetEditorToolkit::UnregisterTabSpawners(InTabManager);
 	InTabManager->UnregisterTabSpawner(FPythonToolKitNamespace::FileBrowserID);
 	InTabManager->UnregisterTabSpawner(FPythonToolKitNamespace::WebBrowserID);
+	InTabManager->UnregisterTabSpawner(FPythonToolKitNamespace::PipID);
 }
 
 TSharedRef<SDockTab> FPythonEditorToolKit::HandleTabManagerSpawnTab(const FSpawnTabArgs& Args, FName TabIdentifier)
@@ -93,6 +101,16 @@ TSharedRef<SDockTab> FPythonEditorToolKit::HandleTabManagerSpawnTab(const FSpawn
 				SAssignNew(PythonDocs, SPythonDocumentation)
 			];
 	}
+
+	if (TabIdentifier == FPythonToolKitNamespace::PipID)
+	{
+		return SNew(SDockTab)
+			.TabRole(ETabRole::PanelTab)
+			[
+				SNew(SPip)
+			];
+	}
+
 	return SNew(SDockTab);
 }
 
@@ -176,10 +194,25 @@ void FPythonEditorToolKit::InitCodeEditor(const EToolkitMode::Type Mode, const T
 			)
 			->Split
 			(
-				FTabManager::NewStack()
-				->AddTab(FPythonToolKitNamespace::WebBrowserID, ETabState::OpenedTab)
-				->SetHideTabWell(false)
-				->SetSizeCoefficient(0.7f)
+
+				FTabManager::NewSplitter()
+				->SetOrientation(Orient_Horizontal)
+				->SetSizeCoefficient(.66f)
+				->Split
+				(
+					// Web Browser ID documentation
+					FTabManager::NewStack()
+					->AddTab(FPythonToolKitNamespace::WebBrowserID, ETabState::OpenedTab)
+					->SetHideTabWell(false)
+					->SetSizeCoefficient(0.7f)
+				)
+				->Split
+				(
+					FTabManager::NewStack()
+					->AddTab(FPythonToolKitNamespace::PipID, ETabState::OpenedTab)
+					->SetHideTabWell(false)
+					->SetSizeCoefficient(0.7f)
+				)
 			)
 			
 		);
@@ -519,6 +552,11 @@ void FPythonEditorToolKit::ExtendToolBar()
 			FPythonEditorToolKit::Get()->OpenDocs(TheURL);
 			//FPlatformProcess::LaunchURL(*TheURL, nullptr, nullptr);
 		}
+
+		static void OpenPipInstall()
+		{
+			FPythonEditorToolKit::Get()->TabManager->InvokeTab(FPythonToolKitNamespace::PipID);
+		}
 	};
 
 
@@ -544,6 +582,12 @@ void FPythonEditorToolKit::ExtendToolBar()
 					FText::FromString("Docs"),
 					FText::FromString("Open python documentation"),
 					FSlateIcon(FPythonEditorStyle::GetStyleSetName(), "PythonEditor.NewFile"));
+
+				ToolbarBuilder.AddToolBarButton(FUIAction(FExecuteAction::CreateStatic(&ToolBarCalls::OpenPipInstall)),
+					TEXT("Pip"),
+					FText::FromString("Pip"),
+					FText::FromString("Open Pip Installer"),
+					FSlateIcon(FPythonEditorStyle::GetStyleSetName(), "PythonEditor.Pip"));
 			}
 			ToolbarBuilder.EndSection();
 		}

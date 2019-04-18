@@ -1,0 +1,14 @@
+/NOLOGO
+/errorReport:prompt
+/MACHINE:x64
+/SUBSYSTEM:WINDOWS
+/DEF
+/NAME:"UE4Editor-PythonEditor-0003.dll"
+/IGNORE:4221
+/NODEFAULTLIB
+"C:\Users\Jorge\Documents\Unreal Projects\PythonExample\Intermediate\Build\Win64\PythonExampleEditor\Development\UnrealEd\SharedPCH.UnrealEd.h.obj"
+"C:\Users\Jorge\Documents\Unreal Projects\PythonExample\Plugins\PythonEditor\Intermediate\Build\Win64\UE4Editor\Development\PythonEditor\Module.PythonEditor.cpp.obj"
+"C:\Users\Jorge\Documents\Unreal Projects\PythonExample\Plugins\PythonEditor\Intermediate\Build\Win64\UE4Editor\Development\PythonEditor\Module.PythonEditor.gen.cpp.obj"
+"C:\Users\Jorge\Documents\Unreal Projects\PythonExample\Plugins\PythonEditor\Intermediate\Build\Win64\UE4Editor\Development\PythonEditor\Default.rc2.res"
+/OUT:"C:\Users\Jorge\Documents\Unreal Projects\PythonExample\Plugins\PythonEditor\Intermediate\Build\Win64\UE4Editor\Development\PythonEditor\UE4Editor-PythonEditor-0003.lib"
+/INCLUDE:IMPLEMENT_MODULE_PythonEditor

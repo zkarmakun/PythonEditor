@@ -47,6 +47,8 @@ public class PythonEditor : ModuleRules
                 "Python",
                 "PythonUtilities",
                 "WebBrowser",
+                "HTTP",
+                "Json",
 				// ... add private dependencies that you statically link with here ...	
 			}
 			);

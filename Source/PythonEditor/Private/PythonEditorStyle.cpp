@@ -73,6 +73,14 @@ TSharedRef< FSlateStyleSet > FPythonEditorStyle::Create()
 	StyleSet->Set("PythonEditor.BG", new IMAGE_BRUSH("T_BG_64x", Icon16x16));
 	StyleSet->Set("PythonEditor.Run", new IMAGE_BRUSH("T_Run_128x", Icon32x32));
 	StyleSet->Set("PythonEditor.NewFile", new IMAGE_BRUSH("T_NewFile_48x", Icon32x32));
+	StyleSet->Set("PythonEditor.Pip", new IMAGE_BRUSH("T_Pip_48x", Icon32x32));
+
+	FSlateImageBrush* barBrush = new IMAGE_BRUSH("T_Mark_128x", Icon128x128);
+	barBrush->DrawAs = ESlateBrushDrawType::Box;
+	barBrush->Margin = .25f;
+	StyleSet->Set("PythonEditor.PipButton", barBrush);
+	
+	StyleSet->Set("PythonEditor.PipButtonImage", new IMAGE_BRUSH("T_PipButtonImage_48x", Icon48x48 ));
 	StyleSet->Set("PythonEditor.NewFolder", new IMAGE_BRUSH("T_NewFolder_48x", Icon32x32));
 	StyleSet->Set("PythonEditor.DeleteFile", new IMAGE_BRUSH("T_DeleteFile_48x", Icon32x32));
 	StyleSet->Set("PythonEditor.RenameFile", new IMAGE_BRUSH("T_Rename_48x", Icon32x32));
@@ -97,6 +105,15 @@ TSharedRef< FSlateStyleSet > FPythonEditorStyle::Create()
 	//Shelf icons
 	StyleSet->Set("Shelf.selected", new IMAGE_BRUSH("T_ShelfTab", Icon16x16));
 	StyleSet->Set("Shelf.ScriptIcon", new IMAGE_BRUSH("T_Python_48x", Icon40x40));
+
+	// Shelf styles
+	FButtonStyle PipButtonStyle;
+	PipButtonStyle.Normal = *StyleSet->GetBrush("PythonEditor.PipButton");
+	PipButtonStyle.Normal.TintColor = FSlateColor(FLinearColor::White * .45f);
+	PipButtonStyle.Hovered = *StyleSet->GetBrush("PythonEditor.PipButton");
+	PipButtonStyle.Pressed = PipButtonStyle.Normal;
+	StyleSet->Set("PythonEditor.PipButtonStyle", PipButtonStyle);
+
 
 	// Shelf styles
 	FButtonStyle ShelfButtonStyle;
