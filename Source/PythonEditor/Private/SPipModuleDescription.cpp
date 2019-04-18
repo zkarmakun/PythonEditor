@@ -6,6 +6,8 @@
 #include "SBoxPanel.h"
 #include "SScaleBox.h"
 #include "SImage.h"
+#include "STextBlock.h"
+#include "PythonEditorStyle.h"
 
 BEGIN_SLATE_FUNCTION_BUILD_OPTIMIZATION
 void SPipModuleDescription::Construct(const FArguments& InArgs)
@@ -15,9 +17,15 @@ void SPipModuleDescription::Construct(const FArguments& InArgs)
 	ChildSlot
 	[
 		SNew(SVerticalBox)
+		+ SVerticalBox::Slot()
+		.HAlign(HAlign_Fill)
+		.VAlign(VAlign_Fill)
 		[
 			SNew(SHorizontalBox)
 			+ SHorizontalBox::Slot()
+			.Padding(10)
+			.AutoWidth()
+			.HAlign(HAlign_Fill)
 			[
 				SNew(SScaleBox)
 				[
@@ -25,11 +33,34 @@ void SPipModuleDescription::Construct(const FArguments& InArgs)
 				]
 			]
 			+ SHorizontalBox::Slot()
+			.Padding(10)
+			.AutoWidth()
+			.HAlign(HAlign_Fill)
 			[
 				SNew(SVerticalBox)
 				+ SVerticalBox::Slot()
 				[
-					CreateHeader(ModuleDescription.Author, ModuleDescription.Au)
+					CreateHeader("Author:", ModuleDescription.Author)
+				]
+				+ SVerticalBox::Slot()
+				[
+					CreateHeader("Author e-mail:", ModuleDescription.AuthorEmail)
+				]
+				+ SVerticalBox::Slot()
+				[
+					CreateHeader("Home page:", ModuleDescription.HomePage)
+				]
+				+ SVerticalBox::Slot()
+				[
+					CreateHeader("Licence:", ModuleDescription.Licence)
+				]
+				+ SVerticalBox::Slot()
+				[
+					CreateHeader("Last Version:", ModuleDescription.LastVersion)
+				]
+				+ SVerticalBox::Slot()
+				[
+					CreateHeader("Summary:", ModuleDescription.Description)
 				]
 			]
 		]
@@ -38,7 +69,20 @@ void SPipModuleDescription::Construct(const FArguments& InArgs)
 }
 END_SLATE_FUNCTION_BUILD_OPTIMIZATION
 
-TSharedPtr<SWidget> SPipModuleDescription::CreateHeader(const FString& Name, const FString Value)
+TSharedRef<SWidget> SPipModuleDescription::CreateHeader(const FString& Name, const FString Value)
 {
-
+	TSharedPtr<SWidget> Widget = SNew(SHorizontalBox)
+		+ SHorizontalBox::Slot()
+		[
+			SNew(STextBlock)
+			.Text(FText::FromString(Name))
+			.TextStyle(&FPythonEditorStyle::Get().GetWidgetStyle<FTextBlockStyle>("SyntaxHighlight.Python.Normal"))
+		]
+		+ SHorizontalBox::Slot()
+		[
+			SNew(STextBlock)
+			.Text(FText::FromString(Value))
+			.ColorAndOpacity(FSlateColor(FLinearColor::White))
+		];
+	return Widget->AsShared();
 }

@@ -23,5 +23,5 @@ public:
 private:
 	FModuleDescription ModuleDescription;
 
-	TSharedPtr<SWidget> CreateHeader(const FString& Name, const FString Value);
+	TSharedRef<SWidget> CreateHeader(const FString& Name, const FString Value);
 };

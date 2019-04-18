@@ -115,18 +115,20 @@ void SPip::Construct(const FArguments& InArgs)
 				.AutoHeight()
 				.VAlign(VAlign_Bottom)
 				[
-					SNew(SScrollBox)
-					+ SScrollBox::Slot()
-					[
-						SAssignNew(ModuleContainer, SVerticalBox)
-					]
+					SNew(SHorizontalBox)
 				]
 			]
 			
 		]
 		+ SSplitter::Slot()
 		[
-			SNew(SVerticalBox)
+			SNew(SScrollBox)
+			+ SScrollBox::Slot()
+			.VAlign(VAlign_Fill)
+			.HAlign(HAlign_Fill)
+			[
+				SAssignNew(ModuleContainer, SVerticalBox)
+			]
 		]
 
 	];
