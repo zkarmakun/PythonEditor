@@ -57,6 +57,7 @@ static const FVector2D Icon171x39(171.0f, 39.0f);
 static const FVector2D Icon170x50(170.0f, 50.0f);
 static const FVector2D Icon267x140(170.0f, 50.0f);
 static const FVector2D Icon128x128(128,128);
+static const FVector2D Icon225x225(225, 225);
 
 TSharedRef< FSlateStyleSet > FPythonEditorStyle::Create()
 {
@@ -65,6 +66,8 @@ TSharedRef< FSlateStyleSet > FPythonEditorStyle::Create()
 
 	StyleSet->Set("PythonEditor.PluginAction", new IMAGE_BRUSH(TEXT("ButtonIcon_40x"), Icon40x40));
 	StyleSet->Set("PythonEditor.NoBG", new IMAGE_BRUSH(TEXT("T_NoBG_48x"), Icon40x40));
+
+	StyleSet->Set("PythonEditor.PipPlaceHolder", new IMAGE_BRUSH(TEXT("T_PlaceHolder"), Icon128x128));
 
 	// File Browser Icons
 	StyleSet->Set("PythonEditor.FileIcon", new IMAGE_BRUSH("T_Python_48x", Icon16x16));

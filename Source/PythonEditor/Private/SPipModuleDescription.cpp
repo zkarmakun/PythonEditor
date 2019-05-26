@@ -29,13 +29,14 @@ void SPipModuleDescription::Construct(const FArguments& InArgs)
 			[
 				SNew(SScaleBox)
 				[
-					SNew(SImage)
+					SNew(SImage).Image(FPythonEditorStyle::Get().GetBrush("PythonEditor.PipPlaceHolder"))
 				]
 			]
 			+ SHorizontalBox::Slot()
 			.Padding(10)
 			.AutoWidth()
 			.HAlign(HAlign_Fill)
+			.VAlign(VAlign_Center)
 			[
 				SNew(SVerticalBox)
 				+ SVerticalBox::Slot()
