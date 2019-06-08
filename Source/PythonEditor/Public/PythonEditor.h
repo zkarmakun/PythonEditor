@@ -11,6 +11,41 @@ class FToolBarBuilder;
 class FMenuBuilder;
 class FPythonShelfToolkit;
 
+struct FPythonSourceModule
+{
+	FString ModuleName;
+	FString SourcePath;
+	FPythonSourceModule()
+	{
+		ModuleName = FString();
+		SourcePath = FString();
+	}
+};
+
+struct FPythonSourcePlugin
+{
+	FString PluginName;
+	TArray<FPythonSourceModule> Modules;
+	FPythonSourcePlugin()
+	{
+		PluginName = FString();
+		Modules = TArray<FPythonSourceModule>();
+	}
+};
+
+struct FPythonProjectSourcePath
+{
+	FString Name;
+	FString SourcePath;
+	TArray<FPythonSourcePlugin> Plugins;
+
+	FPythonProjectSourcePath()
+	{
+		Name = FString();
+		SourcePath = FString();
+	}
+};
+
 class FPythonEditorModule : public IModuleInterface
 {
 public:
@@ -25,6 +60,9 @@ public:
 	//~ Get Project script directory
 	static FString GetProjectScriptDir();
 
+	//~ Get project's python source directory, will create the folder if does not exist
+	static FPythonProjectSourcePath GetProjectPythonSourcePath(bool bIncludeEngineDirectories = false);
+
 	//~ Get Project script saved directory
 	static FString GetScriptSavedDire();
 
@@ -34,10 +72,7 @@ public:
 	}
 
 private:
-
-
 	TSharedPtr<class FUICommandList> PluginCommands;
-	
 
 	//~ Extend window menu
 	void ExtendMenu(class FMenuBuilder& MenuBuilder);

@@ -11,7 +11,11 @@
 #include "SPythonFileBrowserItem.h"
 #include "PythonEditorToolKit.h"
 #include "PythonEditor.h"
+#include "SSearchBox.h"
+#include "SScrollBox.h"
 
+
+#define LOCTEXT_NAMESPACE "PythonFileBrowser"
 
 
 FReply SPythonFileBrowser::OnMouseButtonDown(const FGeometry& MyGeometry, const FPointerEvent& MouseEvent)
@@ -20,7 +24,7 @@ FReply SPythonFileBrowser::OnMouseButtonDown(const FGeometry& MyGeometry, const 
 	{
 		ClearSelection();
 		OnSelectionChanged(nullptr);
-		CreateContextMenuOpt(false);
+		CreateContextMenuOpt(EScriptTreeType::Root);
 	}
 	return FReply::Handled();
 }
@@ -44,7 +48,29 @@ void SPythonFileBrowser::Construct(const FArguments& Args)
 		SNew(SBorder)
 			.BorderImage(FPythonEditorStyle::Get().GetBrush("PythonEditor.BG"))
 			[
-				SAssignNew(Container, SHorizontalBox)
+				//SAssignNew(Container, SHorizontalBox
+				SNew(SVerticalBox)
+				+ SVerticalBox::Slot()
+				.AutoHeight()
+				.Padding(4)
+				[
+					SAssignNew(SearchBox, SSearchBox)
+					.HintText(LOCTEXT("FilterSearch", "Search..."))
+					.ToolTipText(LOCTEXT("FilterSearchHint", "Type here to search (pressing enter selects the results)"))
+					.OnTextChanged(this, &SPythonFileBrowser::OnSearchBoxChanged)
+					.OnTextCommitted(this, &SPythonFileBrowser::OnSearchBoxCommitted)
+				]
+				+ SVerticalBox::Slot()
+				.VAlign(VAlign_Fill)
+				.Padding(4)
+				[
+					SNew(SScrollBox)
+					+ SScrollBox::Slot()
+					.Padding(0)
+					[
+						SAssignNew(Container, SVerticalBox)
+					]
+				]
 			]
 	];
 	Update();
@@ -92,29 +118,86 @@ void SPythonFileBrowser::GetChildrenTree(TSharedPtr<FPyScriptTree> InScriptTree)
 	}
 }
 
+
+
 void SPythonFileBrowser::Update()
 {
 	Container->ClearChildren();
 	Items.Empty();
 
-	TSharedPtr<FPyScriptTree> RootScriptFolder = MakeShareable(new FPyScriptTree());
-	RootScriptFolder->Path = FPythonEditorModule::GetProjectScriptDir();
-	RootScriptFolder->Type = EScriptTreeType::Directory;
-	GetChildrenTree(RootScriptFolder);
+	FPythonProjectSourcePath Project = FPythonEditorModule::GetProjectPythonSourcePath();
 
-	RootDirectory = RootScriptFolder->Children;
+	TSharedPtr<FPyScriptTree> ProjectRoot = MakeShareable(new FPyScriptTree());
 
-	SHorizontalBox::FSlot& Slot = Container->AddSlot()
+	TSharedPtr<FPyScriptTree> RootFolder = MakeShareable(new FPyScriptTree());
+	RootFolder->Path = Project.SourcePath;
+	RootFolder->Type = EScriptTreeType::Root;
+	GetChildrenTree(RootFolder);
+	RootFolder->Name = Project.Name;
+
+	ProjectRoot->Children.Add(RootFolder);
+
+	for (auto& Plugin : Project.Plugins)
+	{
+		TSharedPtr<FPyScriptTree> RootPlugin = MakeShareable(new FPyScriptTree());
+		RootPlugin->Type = EScriptTreeType::Root;
+		if (Plugin.Modules.Num() > 1)
+		{
+			for (auto& Module : Plugin.Modules)
+			{
+				TSharedPtr<FPyScriptTree> RootModule = MakeShareable(new FPyScriptTree());
+				RootModule->Path = Module.SourcePath;
+				RootModule->Type = EScriptTreeType::Root;
+				GetChildrenTree(RootModule);
+				RootModule->Name = Module.ModuleName;
+				RootPlugin->Children.Add(RootModule);
+			}
+		}
+		else
+		{
+			RootPlugin->Path = Plugin.Modules[0].SourcePath;
+			GetChildrenTree(RootPlugin);
+			RootPlugin->Name = Plugin.PluginName;
+		}
+
+		RootPlugin->Name = Plugin.PluginName;
+		ProjectRoot->Children.Add(RootPlugin);
+	}
+
+
+	RootDirectory = ProjectRoot->Children;
+
+	SVerticalBox::FSlot& Slot = Container->AddSlot()
 		.HAlign(HAlign_Fill)
 		.VAlign(VAlign_Fill)
 		.Padding(FMargin(0));
+
 	Slot[
 		SAssignNew(ScriptTree, STreeView<TSharedPtr<FPyScriptTree>>)
 			.TreeItemsSource(&RootDirectory)
 			.OnGenerateRow(this, &SPythonFileBrowser::OnGenerateRow)
 			.OnGetChildren(this, &SPythonFileBrowser::OnGetChildren)
 			.OnMouseButtonDoubleClick(this, &SPythonFileBrowser::MouseButtonDoubleClick)
-	];
+		];
+
+// 	TSharedPtr<FPyScriptTree> RootScriptFolder = MakeShareable(new FPyScriptTree());
+// 	RootScriptFolder->Path = FPythonEditorModule::GetProjectScriptDir();
+// 	RootScriptFolder->Type = EScriptTreeType::Directory;
+// 	GetChildrenTree(RootScriptFolder);
+// 
+// 	RootDirectory = RootScriptFolder->Children;
+// 
+// 	SVerticalBox::FSlot& Slot = Container->AddSlot()
+// 		.HAlign(HAlign_Fill)
+// 		.VAlign(VAlign_Fill)
+// 		.Padding(FMargin(0));
+// 	Slot[
+// 		SAssignNew(ScriptTree, STreeView<TSharedPtr<FPyScriptTree>>)
+// 			.TreeItemsSource(&RootDirectory)
+// 			.OnGenerateRow(this, &SPythonFileBrowser::OnGenerateRow)
+// 			.OnGetChildren(this, &SPythonFileBrowser::OnGetChildren)
+// 			.OnMouseButtonDoubleClick(this, &SPythonFileBrowser::MouseButtonDoubleClick)
+// 	];
 }
 
 void SPythonFileBrowser::CreateNew()
@@ -189,9 +272,20 @@ void SPythonFileBrowser::FindInExplorer()
 	FPlatformProcess::ExploreFolder(*AbsPath);
 }
 
+void SPythonFileBrowser::OnSearchBoxChanged(const FText& Text)
+{
+
+}
+
+void SPythonFileBrowser::OnSearchBoxCommitted(const FText& Text, ETextCommit::Type TextCommitType)
+{
+
+}
+
 TSharedRef<ITableRow> SPythonFileBrowser::OnGenerateRow(TSharedPtr<FPyScriptTree> Item, const TSharedRef<STableViewBase>& OwnerTable)
 {
-	const FSlateBrush* Brush = Item->Type == EScriptTreeType::Directory ? FPythonEditorStyle::Get().GetBrush("PythonEditor.FolderIcon") : FPythonEditorStyle::Get().GetBrush("PythonEditor.FileIcon");
+	check(Item.IsValid());
+
 	TSharedPtr<SPythonFileBrowserItem> BrowserItem = SNew(SPythonFileBrowserItem)
 		.InScriptTree(Item)
 		.OnSelectionChanged(this, &SPythonFileBrowser::OnSelectionChanged)
@@ -208,6 +302,7 @@ TSharedRef<ITableRow> SPythonFileBrowser::OnGenerateRow(TSharedPtr<FPyScriptTree
 
 void SPythonFileBrowser::OnGetChildren(TSharedPtr<FPyScriptTree> Item, TArray<TSharedPtr<FPyScriptTree>>& OutChildren)
 {
+	check(Item.IsValid());
 	OutChildren = Item->Children;
 }
 
@@ -234,7 +329,7 @@ void SPythonFileBrowser::ClearSelection()
 	}
 }
 
-void SPythonFileBrowser::CreateContextMenuOpt(const bool& bFullContextMenu)
+void SPythonFileBrowser::CreateContextMenuOpt(const EScriptTreeType& Type)
 {
 	FMenuBuilder MenuBuilder(true, NULL);
 	MenuBuilder.BeginSection("Main Options");
@@ -248,7 +343,7 @@ void SPythonFileBrowser::CreateContextMenuOpt(const bool& bFullContextMenu)
 
 		MenuBuilder.AddMenuEntry(FText::FromString("Create New Folder"), FText(), FSlateIcon(), FUIAction(FExecuteAction::CreateRaw(this, &SPythonFileBrowser::CreateNewFolder)));
 
-		if (bFullContextMenu)
+		if (true)
 		{
 			MenuBuilder.AddMenuSeparator();
 
@@ -270,3 +365,5 @@ void SPythonFileBrowser::CreateContextMenuOpt(const bool& bFullContextMenu)
 	FPythonContextMenu::SpawnContextMenu(SharedThis(this), MenuBuilder);
 }
 
+
+#undef LOCTEXT_NAMESPAC

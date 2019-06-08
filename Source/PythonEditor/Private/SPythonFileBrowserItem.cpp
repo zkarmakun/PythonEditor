@@ -25,7 +25,7 @@ FReply SPythonFileBrowserItem::OnMouseButtonDown(const FGeometry& MyGeometry, co
 		PythonFileBrowser->ClearSelection();
 		Select(true);
 		OnSelectionChanged.ExecuteIfBound(ScriptTree);
-		PythonFileBrowser->CreateContextMenuOpt(true);
+		PythonFileBrowser->CreateContextMenuOpt(ScriptTree->Type);
 		return FReply::Handled();
 	}
 	return FReply::Unhandled();
@@ -57,7 +57,7 @@ void SPythonFileBrowserItem::Construct(const FArguments& Args)
 	PythonFileBrowser = Args._InOwner;
 	OnSelectionChanged = Args._OnSelectionChanged;
 
-	const FSlateBrush* Brush = ScriptTree->Type == EScriptTreeType::Directory ? FPythonEditorStyle::Get().GetBrush("PythonEditor.FolderIcon") : FPythonEditorStyle::Get().GetBrush("PythonEditor.FileIcon");
+	const FSlateBrush* Brush = ScriptTree->Type == EScriptTreeType::File ? FPythonEditorStyle::Get().GetBrush("PythonEditor.FileIcon") : FPythonEditorStyle::Get().GetBrush("PythonEditor.FolderIcon");
 
 	ChildSlot[
 		SAssignNew(SelectedBorder, SBorder)

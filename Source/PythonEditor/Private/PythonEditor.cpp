@@ -15,6 +15,7 @@
 
 #include "LevelEditor.h"
 #include "SPythonDocumentation.h"
+#include "IPluginManager.h"
 
 DEFINE_LOG_CATEGORY(LogPythonEditor)
 
@@ -89,6 +90,59 @@ FString FPythonEditorModule::GetScriptSavedDire()
 	return FPaths::ProjectDir() + "Scripts/Saved/";
 }
 
+FPythonProjectSourcePath FPythonEditorModule::GetProjectPythonSourcePath(bool bIncludeEngineDirectories /*= false*/)
+{
+	FPythonProjectSourcePath Project;
+
+	//~ Returns the project's python source directory
+	Project.SourcePath = FPaths::ConvertRelativePathToFull(FPaths::ProjectDir() + TEXT("/Source/Python/"));
+	if (!FPaths::DirectoryExists(Project.SourcePath))
+	{
+		IPlatformFile& PlatformFile = FPlatformFileManager::Get().GetPlatformFile();
+		PlatformFile.CreateDirectory(*Project.SourcePath);
+	}
+
+	Project.Name = FApp::GetProjectName();
+
+	//~ Get All Modules
+	TArray<FPythonSourcePlugin> Plugins;
+	TArray<TSharedRef<IPlugin>> AllPlugins = IPluginManager::Get().GetDiscoveredPlugins();
+	for (auto& Plugin : AllPlugins)
+	{
+		if (Plugin->GetType() == EPluginType::Project || bIncludeEngineDirectories)
+		{
+			FPythonSourcePlugin plug;
+			plug.PluginName = Plugin->GetName();
+			TArray<FPythonSourceModule> Modules;
+
+			//Creates a python source folder inside of each module of each plugin
+			FString SourceDirectory = Plugin->GetBaseDir() + TEXT("/Source/");
+			for (auto& Module : Plugin->GetDescriptor().Modules)
+			{
+				FString ModulePath = FPaths::ConvertRelativePathToFull(SourceDirectory + Module.Name.ToString() + TEXT("/Python/"));
+
+				if (!FPaths::DirectoryExists(ModulePath) && !bIncludeEngineDirectories)
+				{
+					IPlatformFile& PlatformFile = FPlatformFileManager::Get().GetPlatformFile();
+					PlatformFile.CreateDirectory(*ModulePath);
+				}
+
+				if (bIncludeEngineDirectories && !FPaths::DirectoryExists(ModulePath)) continue;
+
+				FPythonSourceModule PythonSourceModule;
+				PythonSourceModule.ModuleName = Module.Name.ToString();
+				PythonSourceModule.SourcePath = ModulePath;
+				Modules.Add(PythonSourceModule);
+			}
+			plug.Modules = Modules;
+			Plugins.Add(plug);
+		}
+	}
+
+	Project.Plugins = Plugins;
+	return Project;
+}
+
 TSharedRef<SDockTab> FPythonEditorModule::SpawnShelfEditorTab(const FSpawnTabArgs& TabArgs)
 {
 	check(ShelfToolKit);
@@ -151,7 +205,19 @@ void FPythonEditorModule::OpenPythonEditor()
 
 void FPythonEditorModule::ResisterPythonUserModules()
 {
-	RegisterFolderModule(GetProjectScriptDir(), true);
+	//~ Return every source path detected 
+	FPythonProjectSourcePath ProjectPaths = GetProjectPythonSourcePath();
+	
+	RegisterFolderModule(ProjectPaths.SourcePath, true);
+
+	for (auto& Plugin : ProjectPaths.Plugins)
+	{
+		for (auto& Module : Plugin.Modules)
+		{
+			//~ Register each source path and children folders into Python environment
+			RegisterFolderModule(Module.SourcePath, true);
+		}
+	}
 }
 
 void FPythonEditorModule::RegisterFolderModule(const FString& Folder, const bool& Recursive)

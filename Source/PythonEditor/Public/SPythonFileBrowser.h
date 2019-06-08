@@ -10,6 +10,7 @@
 //~ Type of element in view
 enum EScriptTreeType
 {
+	Root,
 	Directory,
 	File,
 };
@@ -33,6 +34,9 @@ public:
 
 	FPyScriptTree() {
 		Type = EScriptTreeType::Directory;
+		Name = FString();
+		Path = FString();
+		Children = TArray<TSharedPtr<FPyScriptTree>>();
 	};
 };
 
@@ -79,11 +83,14 @@ private:
 	//~ The directory, basically root folder
 	TArray<TSharedPtr<FPyScriptTree>> RootDirectory;
 
-	//~ Container for the STreeView, an easy way to refresh
-	TSharedPtr<SHorizontalBox> Container;
+	//~ Container 
+	TSharedPtr<SVerticalBox> Container;
 
 	//~ All item widgets
 	TArray<TSharedPtr<class SPythonFileBrowserItem>> Items;
+
+	//~ Search box
+	TSharedPtr<class SSearchBox> SearchBox;
 
 private:
 
@@ -99,6 +106,11 @@ private:
 
 	//~ Open some file or folder in windows explorer
 	void FindInExplorer();
+
+	//~ Widget for search
+	void OnSearchBoxCommitted(const FText& Text, ETextCommit::Type TextCommitType);
+	void OnSearchBoxChanged(const FText& Text);
+	//~
 	
 
 public:
@@ -118,6 +130,6 @@ public:
 	void ClearSelection();
 
 	//~ Create context menu  options
-	void CreateContextMenuOpt(const bool& bFullContextMenu);
+	void CreateContextMenuOpt(const EScriptTreeType& Type);
 
 };
