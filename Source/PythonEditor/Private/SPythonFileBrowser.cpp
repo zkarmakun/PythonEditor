@@ -13,6 +13,7 @@
 #include "PythonEditor.h"
 #include "SSearchBox.h"
 #include "SScrollBox.h"
+#include "PythonProject.h"
 
 
 #define LOCTEXT_NAMESPACE "PythonFileBrowser"
@@ -24,7 +25,7 @@ FReply SPythonFileBrowser::OnMouseButtonDown(const FGeometry& MyGeometry, const 
 	{
 		ClearSelection();
 		OnSelectionChanged(nullptr);
-		CreateContextMenuOpt(EScriptTreeType::Root);
+		CreateContextMenuOpt(EScriptTreeType::None);
 	}
 	return FReply::Handled();
 }
@@ -69,14 +70,37 @@ void SPythonFileBrowser::Construct(const FArguments& Args)
 					.Padding(0)
 					[
 						SAssignNew(Container, SVerticalBox)
+						+ SVerticalBox::Slot()
+						[
+							SAssignNew(ScriptTree, STreeView<TSharedPtr<FPyScriptTree>>)
+							.TreeItemsSource(&RootDirectory)
+							.SelectionMode(ESelectionMode::Single)
+							.OnGenerateRow(this, &SPythonFileBrowser::OnGenerateRow)
+							.OnGetChildren(this, &SPythonFileBrowser::OnGetChildren)
+							.OnMouseButtonDoubleClick(this, &SPythonFileBrowser::MouseButtonDoubleClick)
+							.OnExpansionChanged(this, &SPythonFileBrowser::OnExpansionChanged)
+						]
 					]
 				]
 			]
 	];
+
+	//~ Load
+	ExpandedItems.Empty();
+	UPythonProject* PythonProject = GetMutableDefault<UPythonProject>();
+	check(PythonProject);
+	for (auto& Elem : PythonProject->ExpanedFileBrowser)
+	{
+		TSharedPtr<FPyScriptTree> expandedTemp = MakeShareable(new FPyScriptTree());
+		expandedTemp->Name = Elem.Value;
+		expandedTemp->Path = Elem.Key;
+		ExpandedItems.Add(expandedTemp);
+	}
+
 	Update();
 }
 
-void SPythonFileBrowser::GetChildrenTree(TSharedPtr<FPyScriptTree> InScriptTree)
+void SPythonFileBrowser::GetChildrenTree(TSharedPtr<FPyScriptTree> InScriptTree, TArray<TSharedPtr<FPyScriptTree>>& LinearOut)
 {
 	if (FPaths::DirectoryExists(InScriptTree->Path) && InScriptTree.IsValid())
 	{
@@ -98,8 +122,9 @@ void SPythonFileBrowser::GetChildrenTree(TSharedPtr<FPyScriptTree> InScriptTree)
 			FString FullFolder = InScriptTree->Path + Folder + "/";
 			TSharedPtr<FPyScriptTree> NewRoot = MakeShareable(new FPyScriptTree());
 			NewRoot->Path = FullFolder;
-			GetChildrenTree(NewRoot);
+			GetChildrenTree(NewRoot, LinearOut);
 			InScriptTree->Children.Add(NewRoot);
+			LinearOut.Add(NewRoot);
 			//	UE_LOG(LogTemp, Log, TEXT("folder %s"), *FullFolder);
 		}
 
@@ -112,43 +137,49 @@ void SPythonFileBrowser::GetChildrenTree(TSharedPtr<FPyScriptTree> InScriptTree)
 			NewRoot->Name = File;
 			NewRoot->Path = InScriptTree->Path + File;
 			InScriptTree->Children.Add(NewRoot);
+			LinearOut.Add(NewRoot);
 			//UE_LOG(LogTemp, Log, TEXT("file %s"), *FullFilePath);
 		}
 
 	}
 }
 
-
-
 void SPythonFileBrowser::Update()
 {
-	Container->ClearChildren();
-	Items.Empty();
+	//Container->ClearChildren();
+	TArray<TSharedPtr<FPyScriptTree>> LinearTree;
 
 	FPythonProjectSourcePath Project = FPythonEditorModule::GetProjectPythonSourcePath();
 
 	TSharedPtr<FPyScriptTree> ProjectRoot = MakeShareable(new FPyScriptTree());
 
 	TSharedPtr<FPyScriptTree> RootFolder = MakeShareable(new FPyScriptTree());
+	LinearTree.Add(RootFolder);
+	LinearTree.Add(ProjectRoot);
+
+
 	RootFolder->Path = Project.SourcePath;
 	RootFolder->Type = EScriptTreeType::Root;
-	GetChildrenTree(RootFolder);
+	GetChildrenTree(RootFolder, LinearTree);
 	RootFolder->Name = Project.Name;
+
 
 	ProjectRoot->Children.Add(RootFolder);
 
 	for (auto& Plugin : Project.Plugins)
 	{
 		TSharedPtr<FPyScriptTree> RootPlugin = MakeShareable(new FPyScriptTree());
+		LinearTree.Add(RootPlugin);
 		RootPlugin->Type = EScriptTreeType::Root;
 		if (Plugin.Modules.Num() > 1)
 		{
 			for (auto& Module : Plugin.Modules)
 			{
 				TSharedPtr<FPyScriptTree> RootModule = MakeShareable(new FPyScriptTree());
+				LinearTree.Add(RootModule);
 				RootModule->Path = Module.SourcePath;
 				RootModule->Type = EScriptTreeType::Root;
-				GetChildrenTree(RootModule);
+				GetChildrenTree(RootModule, LinearTree);
 				RootModule->Name = Module.ModuleName;
 				RootPlugin->Children.Add(RootModule);
 			}
@@ -156,7 +187,7 @@ void SPythonFileBrowser::Update()
 		else
 		{
 			RootPlugin->Path = Plugin.Modules[0].SourcePath;
-			GetChildrenTree(RootPlugin);
+			GetChildrenTree(RootPlugin, LinearTree);
 			RootPlugin->Name = Plugin.PluginName;
 		}
 
@@ -164,40 +195,24 @@ void SPythonFileBrowser::Update()
 		ProjectRoot->Children.Add(RootPlugin);
 	}
 
+	
+	ScriptTree->GetExpandedItems(ExpandedItems);
 
+	Items.Empty();
 	RootDirectory = ProjectRoot->Children;
+	ScriptTree->RequestTreeRefresh();
 
-	SVerticalBox::FSlot& Slot = Container->AddSlot()
-		.HAlign(HAlign_Fill)
-		.VAlign(VAlign_Fill)
-		.Padding(FMargin(0));
-
-	Slot[
-		SAssignNew(ScriptTree, STreeView<TSharedPtr<FPyScriptTree>>)
-			.TreeItemsSource(&RootDirectory)
-			.OnGenerateRow(this, &SPythonFileBrowser::OnGenerateRow)
-			.OnGetChildren(this, &SPythonFileBrowser::OnGetChildren)
-			.OnMouseButtonDoubleClick(this, &SPythonFileBrowser::MouseButtonDoubleClick)
-		];
-
-// 	TSharedPtr<FPyScriptTree> RootScriptFolder = MakeShareable(new FPyScriptTree());
-// 	RootScriptFolder->Path = FPythonEditorModule::GetProjectScriptDir();
-// 	RootScriptFolder->Type = EScriptTreeType::Directory;
-// 	GetChildrenTree(RootScriptFolder);
-// 
-// 	RootDirectory = RootScriptFolder->Children;
-// 
-// 	SVerticalBox::FSlot& Slot = Container->AddSlot()
-// 		.HAlign(HAlign_Fill)
-// 		.VAlign(VAlign_Fill)
-// 		.Padding(FMargin(0));
-// 	Slot[
-// 		SAssignNew(ScriptTree, STreeView<TSharedPtr<FPyScriptTree>>)
-// 			.TreeItemsSource(&RootDirectory)
-// 			.OnGenerateRow(this, &SPythonFileBrowser::OnGenerateRow)
-// 			.OnGetChildren(this, &SPythonFileBrowser::OnGetChildren)
-// 			.OnMouseButtonDoubleClick(this, &SPythonFileBrowser::MouseButtonDoubleClick)
-// 	];
+	for (auto& Elem : LinearTree)
+	{
+		for (auto& Expanded : ExpandedItems)
+		{
+			if (Elem->Name == Expanded->Name && Elem->Path == Expanded->Path)
+			{
+				ScriptTree->SetItemExpansion(Elem, true);
+				continue;
+			}
+		}
+	}
 }
 
 void SPythonFileBrowser::CreateNew()
@@ -282,6 +297,22 @@ void SPythonFileBrowser::OnSearchBoxCommitted(const FText& Text, ETextCommit::Ty
 
 }
 
+void SPythonFileBrowser::OnExpansionChanged(TSharedPtr<FPyScriptTree> Item, bool bValue)
+{
+	TSet<TSharedPtr<FPyScriptTree>> ExpandedItemsToSave;
+	ScriptTree->GetExpandedItems(ExpandedItemsToSave);
+
+	UPythonProject* PythonProject = GetMutableDefault<UPythonProject>();
+	check(PythonProject);
+	PythonProject->ExpanedFileBrowser.Empty();
+
+	for (auto& Elem : ExpandedItemsToSave)
+	{
+		PythonProject->ExpanedFileBrowser.Add(Elem->Name, Elem->Path);
+	}
+	PythonProject->SaveConfig();
+}
+
 TSharedRef<ITableRow> SPythonFileBrowser::OnGenerateRow(TSharedPtr<FPyScriptTree> Item, const TSharedRef<STableViewBase>& OwnerTable)
 {
 	check(Item.IsValid());
@@ -331,6 +362,8 @@ void SPythonFileBrowser::ClearSelection()
 
 void SPythonFileBrowser::CreateContextMenuOpt(const EScriptTreeType& Type)
 {
+	if (Type == EScriptTreeType::None) return;
+
 	FMenuBuilder MenuBuilder(true, NULL);
 	MenuBuilder.BeginSection("Main Options");
 	{
@@ -343,22 +376,29 @@ void SPythonFileBrowser::CreateContextMenuOpt(const EScriptTreeType& Type)
 
 		MenuBuilder.AddMenuEntry(FText::FromString("Create New Folder"), FText(), FSlateIcon(), FUIAction(FExecuteAction::CreateRaw(this, &SPythonFileBrowser::CreateNewFolder)));
 
-		if (true)
-		{
-			MenuBuilder.AddMenuSeparator();
 
-			//Edit Script
-			MenuBuilder.AddMenuEntry(FText::FromString("Edit File"), FText(), FSlateIcon(), FUIAction(FExecuteAction::CreateRaw(this, &SPythonFileBrowser::Edit)));
+		MenuBuilder.AddMenuSeparator();
+
+		if (Type != EScriptTreeType::Root)
+		{
+			
+			if (Type == EScriptTreeType::File)
+			{
+				//Edit Script
+				MenuBuilder.AddMenuEntry(FText::FromString("Edit File"), FText(), FSlateIcon(), FUIAction(FExecuteAction::CreateRaw(this, &SPythonFileBrowser::Edit)));
+			}
 
 			//Rename Script
 			MenuBuilder.AddMenuEntry(FText::FromString("Rename"), FText(), FSlateIcon(), FUIAction(FExecuteAction::CreateRaw(this, &SPythonFileBrowser::Rename)));
 
 			//Delete Script
 			MenuBuilder.AddMenuEntry(FText::FromString("Delete"), FText(), FSlateIcon(), FUIAction(FExecuteAction::CreateRaw(this, &SPythonFileBrowser::Delete)));
-
-			//find folder or file in explorer 
-			MenuBuilder.AddMenuEntry(FText::FromString("Open in explorer"), FText(), FSlateIcon(), FUIAction(FExecuteAction::CreateRaw(this, &SPythonFileBrowser::FindInExplorer)));
 		}
+		
+
+		//find folder or file in explorer 
+		MenuBuilder.AddMenuEntry(FText::FromString("Open in explorer"), FText(), FSlateIcon(), FUIAction(FExecuteAction::CreateRaw(this, &SPythonFileBrowser::FindInExplorer)));
+		
 	}
 	MenuBuilder.EndSection();
 

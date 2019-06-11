@@ -10,6 +10,7 @@
 //~ Type of element in view
 enum EScriptTreeType
 {
+	None,
 	Root,
 	Directory,
 	File,
@@ -68,7 +69,7 @@ private:
 	//~
 
 	//~ Gathers all tree, it ask for the root to begin
-	void GetChildrenTree(TSharedPtr<FPyScriptTree> InScriptTree);
+	void GetChildrenTree(TSharedPtr<FPyScriptTree> InScriptTree, TArray<TSharedPtr<FPyScriptTree>>& LinearOut);
 
 private:
 	//~ Delegates to send last element selected
@@ -92,6 +93,9 @@ private:
 	//~ Search box
 	TSharedPtr<class SSearchBox> SearchBox;
 
+	//~ Expanded items;
+	TSet<TSharedPtr<FPyScriptTree>> ExpandedItems;
+
 private:
 
 	//~ IPythonContextMenu
@@ -111,7 +115,9 @@ private:
 	void OnSearchBoxCommitted(const FText& Text, ETextCommit::Type TextCommitType);
 	void OnSearchBoxChanged(const FText& Text);
 	//~
-	
+
+	//~ STreeView
+	void OnExpansionChanged(TSharedPtr<FPyScriptTree> Item, bool bValue);
 
 public:
 	/** Widget constructor */

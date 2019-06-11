@@ -22,5 +22,8 @@ public:
 	//~ List of all tab are open
 	UPROPERTY(Config, EditAnywhere, Category = "Shelfs")
 		TMap<FName, FString> OpenedTabs;
+
+	UPROPERTY(Config, EditAnywhere, Category = "Shelds")
+		TMap<FString, FString> ExpanedFileBrowser;
 	
 };

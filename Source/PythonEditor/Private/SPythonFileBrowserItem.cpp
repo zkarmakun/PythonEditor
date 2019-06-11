@@ -101,3 +101,13 @@ void SPythonFileBrowserItem::Select(const bool& bSelect)
 		SelectedBorder->SetBorderBackgroundColor(FLinearColor::Transparent);
 	}
 }
+
+bool SPythonFileBrowserItem::IsSame(TSharedPtr<FPyScriptTree> Compare)
+{
+	return (Compare->Name == ScriptTree->Name && Compare->Path == ScriptTree->Path);
+}
+
+TSharedPtr<FPyScriptTree> SPythonFileBrowserItem::GetItem() const
+{
+	return ScriptTree;
+}

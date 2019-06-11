@@ -317,6 +317,7 @@ void FPythonEditorToolKit::RenameFileOrFolder(TSharedPtr<FPyScriptTree> ScriptTr
 	}
 }
 
+
 void FPythonEditorToolKit::CloseOrDeleteFile(TSharedPtr<FPyScriptTree> InScript)
 {
 	FName TabId(*InScript->Name);

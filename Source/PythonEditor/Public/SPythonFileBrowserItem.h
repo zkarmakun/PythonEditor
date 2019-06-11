@@ -55,5 +55,9 @@ public:
 
 	//~ Force select this item
 	void Select(const bool& bSelect);
+
+	bool IsSame(TSharedPtr<FPyScriptTree> Compare);
+
+	TSharedPtr<FPyScriptTree> GetItem() const;
 };
 
