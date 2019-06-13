@@ -6,6 +6,8 @@
 #include "Widgets/Views/STreeView.h"
 #include "CoreMinimal.h"
 #include "IPythonContextMenu.h"
+#include "TextFilter.h"
+#include "TreeFilterHandler.h"
 
 //~ Type of element in view
 enum EScriptTreeType
@@ -17,7 +19,7 @@ enum EScriptTreeType
 };
 
 //~ Tree view element
-class FPyScriptTree
+class FPyScriptModel
 {
 
 public:
@@ -28,21 +30,30 @@ public:
 	FString Path;
 
 	//~ Children
-	TArray<TSharedPtr<FPyScriptTree>> Children;
+	TArray<TSharedPtr<FPyScriptModel>> Children;
+
+	TSharedPtr<FPyScriptModel> Parent;
 
 	//~ Element tree type
 	EScriptTreeType Type;
 
-	FPyScriptTree() {
+	FPyScriptModel() {
 		Type = EScriptTreeType::Directory;
 		Name = FString();
 		Path = FString();
-		Children = TArray<TSharedPtr<FPyScriptTree>>();
+		Children = TArray<TSharedPtr<FPyScriptModel>>();
 	};
+
+	void AddChild(TSharedPtr<FPyScriptModel>& Child, TSharedPtr<FPyScriptModel>& InParent)
+	{
+		Child->Parent = InParent;
+		Children.Add(Child);
+	}
 };
 
 
-DECLARE_DELEGATE_OneParam(FOnElemSelected, TSharedPtr<FPyScriptTree>)
+
+DECLARE_DELEGATE_OneParam(FOnElemSelected, TSharedPtr<FPyScriptModel>)
 
 /**
  * File browser widget for python files
@@ -54,47 +65,6 @@ public:
 	{}
 	SLATE_EVENT(FOnElemSelected, OnElemSelected)
 	SLATE_END_ARGS()
-
-public:
-
-	//~ SWidget
-	virtual FReply OnMouseButtonDown(const FGeometry& MyGeometry, const FPointerEvent& MouseEvent) override;
-
-private:
-	//~ STreeView
-	void MouseButtonDoubleClick(TSharedPtr<FPyScriptTree> Script);
-	TSharedRef<ITableRow> OnGenerateRow(TSharedPtr<FPyScriptTree> Item, const TSharedRef<STableViewBase>& OwnerTable);
-	void OnGetChildren(TSharedPtr<FPyScriptTree> Item, TArray<TSharedPtr<FPyScriptTree>>& OutChildren);
-	void OnSelectionChanged(TSharedPtr<FPyScriptTree> Item);
-	//~
-
-	//~ Gathers all tree, it ask for the root to begin
-	void GetChildrenTree(TSharedPtr<FPyScriptTree> InScriptTree, TArray<TSharedPtr<FPyScriptTree>>& LinearOut);
-
-private:
-	//~ Delegates to send last element selected
-	FOnElemSelected OnElemSelected;
-
-	//~ Holds last selection
-	TSharedPtr<FPyScriptTree> LastSelection;
-
-	//~ STreeView widget
-	TSharedPtr<STreeView<TSharedPtr<FPyScriptTree>>> ScriptTree;
-
-	//~ The directory, basically root folder
-	TArray<TSharedPtr<FPyScriptTree>> RootDirectory;
-
-	//~ Container 
-	TSharedPtr<SVerticalBox> Container;
-
-	//~ All item widgets
-	TArray<TSharedPtr<class SPythonFileBrowserItem>> Items;
-
-	//~ Search box
-	TSharedPtr<class SSearchBox> SearchBox;
-
-	//~ Expanded items;
-	TSet<TSharedPtr<FPyScriptTree>> ExpandedItems;
 
 private:
 
@@ -117,9 +87,32 @@ private:
 	//~
 
 	//~ STreeView
-	void OnExpansionChanged(TSharedPtr<FPyScriptTree> Item, bool bValue);
+	void OnExpansionChanged(TSharedPtr<FPyScriptModel> Item, bool bValue);
+
+	/** Transforms the Script into a searchable string */
+	void TransformScriptToString(TSharedPtr<FPyScriptModel> Script, OUT TArray< FString >& Array);
+
+	void WidgetHierarchy_OnGetChildren(TSharedPtr<FPyScriptModel> InParent, TArray< TSharedPtr<FPyScriptModel> >& OutChildren);
+
+
+	//~ Here rebuild ***************************************************************
+	void RebuldTreeView();
+
+	//~ STreeView
+	void MouseButtonDoubleClick(TSharedPtr<FPyScriptModel> Script);
+	TSharedRef<ITableRow> OnGenerateRow(TSharedPtr<FPyScriptModel> Item, const TSharedRef<STableViewBase>& OwnerTable);
+	void OnGetChildren(TSharedPtr<FPyScriptModel> Item, TArray<TSharedPtr<FPyScriptModel>>& OutChildren);
+	void OnSelectionChanged(TSharedPtr<FPyScriptModel> Item);
+	//~
+
+	//~ Gathers all tree, it ask for the root to begin
+	void GetChildrenTree(TSharedPtr<FPyScriptModel> InScriptTree, TArray<TSharedPtr<FPyScriptModel>>& LinearOut);
 
 public:
+
+	//~ SWidget
+	virtual FReply OnMouseButtonDown(const FGeometry& MyGeometry, const FPointerEvent& MouseEvent) override;
+
 	/** Widget constructor */
 	void Construct(const FArguments& Args);
 
@@ -127,15 +120,48 @@ public:
 	void Update();
 
 	//~ Request close tab from toolkit
-	void CloseFile(TSharedPtr<FPyScriptTree> ScriptToClose);
+	void CloseFile(TSharedPtr<FPyScriptModel> ScriptToClose);
 
 	//~ Get Last selection
-	TSharedPtr<FPyScriptTree> GetLastSelection();
+	TSharedPtr<FPyScriptModel> GetLastSelection();
 
 	//~ Clear the selection
 	void ClearSelection();
 
 	//~ Create context menu  options
 	void CreateContextMenuOpt(const EScriptTreeType& Type);
+
+private:
+	//~ Delegates to send last element selected
+	FOnElemSelected OnElemSelected;
+
+	//~ Holds last selection
+	TSharedPtr<FPyScriptModel> LastSelection;
+
+	//~ STreeView widget
+	TSharedPtr<STreeView<TSharedPtr<FPyScriptModel>>> ScriptTreeView;
+
+	//~ The directory, basically root folder
+	TArray<TSharedPtr<FPyScriptModel>> RootDirectory;
+
+	//~ Container 
+	TSharedPtr<SVerticalBox> Container;
+
+	//~ All item widgets
+	TArray<TSharedPtr<class SPythonFileBrowserItem>> Items;
+
+	//~ Search box
+	TSharedPtr<class SSearchBox> SearchBox;
+
+	//~ Expanded items;
+	TSet<TSharedPtr<FPyScriptModel>> ExpandedItems;
+
+	/** Handles filtering the hierarchy based on an IFilter. */
+	TSharedPtr< TreeFilterHandler< TSharedPtr<FPyScriptModel> > > FilterHandler;
+
+	typedef TTextFilter< TSharedPtr<FPyScriptModel> > PyTextFilter;
+
+	/** The filter used by the search box */
+	TSharedPtr<PyTextFilter> SearchBoxPyFilter;
 
 };

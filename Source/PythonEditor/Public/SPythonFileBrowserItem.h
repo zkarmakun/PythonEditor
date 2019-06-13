@@ -7,7 +7,7 @@
 #include "SPythonFileBrowser.h"
 #include "IPythonContextMenu.h"
 
-class FPyScriptTree;
+class FPyScriptModel;
 enum EScriptTreeType;
 
 
@@ -21,7 +21,7 @@ public:
 	SLATE_BEGIN_ARGS(SPythonFileBrowserItem)
 	{}
 
-	SLATE_ARGUMENT(TSharedPtr<FPyScriptTree>, InScriptTree)
+	SLATE_ARGUMENT(TSharedPtr<FPyScriptModel>, InScriptTree)
 	SLATE_ARGUMENT(TSharedPtr<class SPythonFileBrowser>, InOwner)
 	SLATE_EVENT(FOnElemSelected, OnSelectionChanged)
 	SLATE_END_ARGS()
@@ -41,7 +41,7 @@ private:
 
 private:
 	//~ Hold this tree item
-	TSharedPtr<FPyScriptTree> ScriptTree;
+	TSharedPtr<FPyScriptModel> ScriptTree;
 
 	//~ A reference to the file browser owner
 	TSharedPtr<class SPythonFileBrowser> PythonFileBrowser;
@@ -56,8 +56,8 @@ public:
 	//~ Force select this item
 	void Select(const bool& bSelect);
 
-	bool IsSame(TSharedPtr<FPyScriptTree> Compare);
+	bool IsSame(TSharedPtr<FPyScriptModel> Compare);
 
-	TSharedPtr<FPyScriptTree> GetItem() const;
+	TSharedPtr<FPyScriptModel> GetItem() const;
 };
 

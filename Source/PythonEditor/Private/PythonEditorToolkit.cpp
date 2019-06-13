@@ -235,7 +235,7 @@ void FPythonEditorToolKit::InitCodeEditor(const EToolkitMode::Type Mode, const T
 	RestoreTabs();
 }
 
-FString FPythonEditorToolKit::GetCode(TSharedPtr<FPyScriptTree> InScript)
+FString FPythonEditorToolKit::GetCode(TSharedPtr<FPyScriptModel> InScript)
 {
 	FString Code;
 	if (InScript->Type == EScriptTreeType::File)
@@ -250,7 +250,7 @@ FString FPythonEditorToolKit::GetCode(TSharedPtr<FPyScriptTree> InScript)
 	return Code;
 }
 
-void FPythonEditorToolKit::OpenFile(TSharedPtr<FPyScriptTree> InScript)
+void FPythonEditorToolKit::OpenFile(TSharedPtr<FPyScriptModel> InScript)
 {
 	FName TabId(*InScript->Name);
 	TSharedPtr<SDockTab> ExistingTab = TabManager->FindExistingLiveTab(TabId);
@@ -267,7 +267,7 @@ void FPythonEditorToolKit::OpenFile(TSharedPtr<FPyScriptTree> InScript)
 	}
 }
 
-void FPythonEditorToolKit::DeleteFile(TSharedPtr<FPyScriptTree> ScriptTree)
+void FPythonEditorToolKit::DeleteFile(TSharedPtr<FPyScriptModel> ScriptTree)
 {
 	ensure(ScriptTree);
 	IPlatformFile& PlatformFile = FPlatformFileManager::Get().GetPlatformFile();
@@ -281,7 +281,7 @@ void FPythonEditorToolKit::DeleteFile(TSharedPtr<FPyScriptTree> ScriptTree)
 	}
 }
 
-void FPythonEditorToolKit::RenameFileOrFolder(TSharedPtr<FPyScriptTree> ScriptTree, const FString& NewName)
+void FPythonEditorToolKit::RenameFileOrFolder(TSharedPtr<FPyScriptModel> ScriptTree, const FString& NewName)
 {
 	ensure(ScriptTree);
 
@@ -318,7 +318,7 @@ void FPythonEditorToolKit::RenameFileOrFolder(TSharedPtr<FPyScriptTree> ScriptTr
 }
 
 
-void FPythonEditorToolKit::CloseOrDeleteFile(TSharedPtr<FPyScriptTree> InScript)
+void FPythonEditorToolKit::CloseOrDeleteFile(TSharedPtr<FPyScriptModel> InScript)
 {
 	FName TabId(*InScript->Name);
 	TSharedPtr<SDockTab> ExistingTab = TabManager->FindExistingLiveTab(TabId);
@@ -332,7 +332,7 @@ void FPythonEditorToolKit::CloseOrDeleteFile(TSharedPtr<FPyScriptTree> InScript)
 	UE_LOG(LogTemp, Log, TEXT("Removed file: %s"), *InScript->Name);
 }
 
-TSharedPtr<SPythonCodeEditor> FPythonEditorToolKit::GetCurrentPythonCodeEditor(TSharedPtr<FPyScriptTree> InScript) const
+TSharedPtr<SPythonCodeEditor> FPythonEditorToolKit::GetCurrentPythonCodeEditor(TSharedPtr<FPyScriptModel> InScript) const
 {
 	for (auto& ScriptEditor : OpenedScripts)
 	{
@@ -384,7 +384,7 @@ void FPythonEditorToolKit::OpenDocs(const FString& Link)
 	}
 }
 
-void FPythonEditorToolKit::CreateNewScriptFolder(TSharedPtr<FPyScriptTree> ScriptTree, const FString& Name)
+void FPythonEditorToolKit::CreateNewScriptFolder(TSharedPtr<FPyScriptModel> ScriptTree, const FString& Name)
 {
 	if (Name.IsEmpty())
 	{
@@ -415,7 +415,7 @@ void FPythonEditorToolKit::CreateNewScriptFolder(TSharedPtr<FPyScriptTree> Scrip
 	}
 }
 
-void FPythonEditorToolKit::CreateNewScript(TSharedPtr<FPyScriptTree> ScriptTree, const FString& Name)
+void FPythonEditorToolKit::CreateNewScript(TSharedPtr<FPyScriptModel> ScriptTree, const FString& Name)
 {
 	if (Name.IsEmpty())
 	{
@@ -451,7 +451,7 @@ void FPythonEditorToolKit::CreateNewScript(TSharedPtr<FPyScriptTree> ScriptTree,
 	}
 }
 
-TSharedRef<SDockTab> FPythonEditorToolKit::HandleScriptTab(const FSpawnTabArgs& Args, TSharedPtr<FPyScriptTree> Script)
+TSharedRef<SDockTab> FPythonEditorToolKit::HandleScriptTab(const FSpawnTabArgs& Args, TSharedPtr<FPyScriptModel> Script)
 {
 	TSharedPtr<SPythonCodeEditor> CodeEditor = SNew(SPythonCodeEditor).File(Script->Path).TabName(Script->Name);
 	OpenedScripts.Add(Script->Name, CodeEditor);
@@ -469,7 +469,7 @@ TSharedRef<SDockTab> FPythonEditorToolKit::HandleScriptTab(const FSpawnTabArgs& 
 }
 
 
-void FPythonEditorToolKit::OnTabActive(TSharedRef<SDockTab> Tab, ETabActivationCause Cause, TSharedPtr<FPyScriptTree> Script, TSharedPtr<SPythonCodeEditor> InCodeEditor)
+void FPythonEditorToolKit::OnTabActive(TSharedRef<SDockTab> Tab, ETabActivationCause Cause, TSharedPtr<FPyScriptModel> Script, TSharedPtr<SPythonCodeEditor> InCodeEditor)
 {
 	CurrentScript = Script;
 	CurrentCodeEditor = InCodeEditor;
@@ -477,7 +477,7 @@ void FPythonEditorToolKit::OnTabActive(TSharedRef<SDockTab> Tab, ETabActivationC
 	PythonProject->SaveConfig();
 }
 
-void FPythonEditorToolKit::OnFileBrowserSelectionChanged(TSharedPtr<FPyScriptTree> NewSelection)
+void FPythonEditorToolKit::OnFileBrowserSelectionChanged(TSharedPtr<FPyScriptModel> NewSelection)
 {
 	CurrentBroswerScriptSelected = NewSelection;
 }
@@ -517,7 +517,7 @@ void FPythonEditorToolKit::RestoreTabs()
 	{
 		if (FPaths::FileExists(Elem.Value))
 		{
-			TSharedPtr<FPyScriptTree> Restored = MakeShareable(new FPyScriptTree());
+			TSharedPtr<FPyScriptModel> Restored = MakeShareable(new FPyScriptModel());
 			Restored->Name = Elem.Key.ToString();
 			Restored->Path = Elem.Value;
 			OpenFile(Restored);

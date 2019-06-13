@@ -102,12 +102,12 @@ void SPythonFileBrowserItem::Select(const bool& bSelect)
 	}
 }
 
-bool SPythonFileBrowserItem::IsSame(TSharedPtr<FPyScriptTree> Compare)
+bool SPythonFileBrowserItem::IsSame(TSharedPtr<FPyScriptModel> Compare)
 {
 	return (Compare->Name == ScriptTree->Name && Compare->Path == ScriptTree->Path);
 }
 
-TSharedPtr<FPyScriptTree> SPythonFileBrowserItem::GetItem() const
+TSharedPtr<FPyScriptModel> SPythonFileBrowserItem::GetItem() const
 {
 	return ScriptTree;
 }

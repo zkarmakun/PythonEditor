@@ -30,12 +30,12 @@ FReply SPythonFileBrowser::OnMouseButtonDown(const FGeometry& MyGeometry, const 
 	return FReply::Handled();
 }
 
-void SPythonFileBrowser::MouseButtonDoubleClick(TSharedPtr<FPyScriptTree> Script)
+void SPythonFileBrowser::MouseButtonDoubleClick(TSharedPtr<FPyScriptModel> Script)
 {
 	FPythonEditorToolKit::Get()->OpenFile(Script);
 }
 
-void SPythonFileBrowser::OnSelectionChanged(TSharedPtr<FPyScriptTree> Item)
+void SPythonFileBrowser::OnSelectionChanged(TSharedPtr<FPyScriptModel> Item)
 {
 	LastSelection = Item;
 	OnElemSelected.ExecuteIfBound(LastSelection);
@@ -72,7 +72,7 @@ void SPythonFileBrowser::Construct(const FArguments& Args)
 						SAssignNew(Container, SVerticalBox)
 						+ SVerticalBox::Slot()
 						[
-							SAssignNew(ScriptTree, STreeView<TSharedPtr<FPyScriptTree>>)
+							SAssignNew(ScriptTreeView, STreeView<TSharedPtr<FPyScriptModel>>)
 							.TreeItemsSource(&RootDirectory)
 							.SelectionMode(ESelectionMode::Single)
 							.OnGenerateRow(this, &SPythonFileBrowser::OnGenerateRow)
@@ -85,22 +85,29 @@ void SPythonFileBrowser::Construct(const FArguments& Args)
 			]
 	];
 
-	//~ Load
+	// Create the filter for searching in the tree
+	SearchBoxPyFilter = MakeShareable(new PyTextFilter(PyTextFilter::FItemToStringArray::CreateSP(this, &SPythonFileBrowser::TransformScriptToString)));
+
+	FilterHandler = MakeShareable(new TreeFilterHandler< TSharedPtr<FPyScriptModel> >());
+	FilterHandler->SetFilter(SearchBoxPyFilter.Get());
+	FilterHandler->SetGetChildrenDelegate(TreeFilterHandler< TSharedPtr<FPyScriptModel> >::FOnGetChildren::CreateRaw(this, &SPythonFileBrowser::WidgetHierarchy_OnGetChildren));
+
+	//~ Load file browser last positions
 	ExpandedItems.Empty();
 	UPythonProject* PythonProject = GetMutableDefault<UPythonProject>();
 	check(PythonProject);
 	for (auto& Elem : PythonProject->ExpanedFileBrowser)
 	{
-		TSharedPtr<FPyScriptTree> expandedTemp = MakeShareable(new FPyScriptTree());
-		expandedTemp->Name = Elem.Value;
-		expandedTemp->Path = Elem.Key;
+		TSharedPtr<FPyScriptModel> expandedTemp = MakeShareable(new FPyScriptModel());
+		expandedTemp->Name = Elem.Key;
+		expandedTemp->Path = Elem.Value;
 		ExpandedItems.Add(expandedTemp);
 	}
 
 	Update();
 }
 
-void SPythonFileBrowser::GetChildrenTree(TSharedPtr<FPyScriptTree> InScriptTree, TArray<TSharedPtr<FPyScriptTree>>& LinearOut)
+void SPythonFileBrowser::GetChildrenTree(TSharedPtr<FPyScriptModel> InScriptTree, TArray<TSharedPtr<FPyScriptModel>>& LinearOut)
 {
 	if (FPaths::DirectoryExists(InScriptTree->Path) && InScriptTree.IsValid())
 	{
@@ -120,87 +127,72 @@ void SPythonFileBrowser::GetChildrenTree(TSharedPtr<FPyScriptTree> InScriptTree,
 		for (FString& Folder : Folders)
 		{
 			FString FullFolder = InScriptTree->Path + Folder + "/";
-			TSharedPtr<FPyScriptTree> NewRoot = MakeShareable(new FPyScriptTree());
+			TSharedPtr<FPyScriptModel> NewRoot = MakeShareable(new FPyScriptModel());
 			NewRoot->Path = FullFolder;
 			GetChildrenTree(NewRoot, LinearOut);
-			InScriptTree->Children.Add(NewRoot);
+			
+			InScriptTree->AddChild(NewRoot, InScriptTree);
 			LinearOut.Add(NewRoot);
-			//	UE_LOG(LogTemp, Log, TEXT("folder %s"), *FullFolder);
 		}
 
 		for (FString& File : Files)
 		{
 			if(File.EndsWith(".pyc")) continue;
 
-			TSharedPtr<FPyScriptTree> NewRoot = MakeShareable(new FPyScriptTree());
+			TSharedPtr<FPyScriptModel> NewRoot = MakeShareable(new FPyScriptModel());
 			NewRoot->Type = EScriptTreeType::File;
 			NewRoot->Name = File;
 			NewRoot->Path = InScriptTree->Path + File;
-			InScriptTree->Children.Add(NewRoot);
-			LinearOut.Add(NewRoot);
-			//UE_LOG(LogTemp, Log, TEXT("file %s"), *FullFilePath);
-		}
 
+			InScriptTree->AddChild(NewRoot, InScriptTree);
+			LinearOut.Add(NewRoot);
+		}
+		
 	}
 }
 
 void SPythonFileBrowser::Update()
 {
 	//Container->ClearChildren();
-	TArray<TSharedPtr<FPyScriptTree>> LinearTree;
+	TArray<TSharedPtr<FPyScriptModel>> LinearTree;
 
 	FPythonProjectSourcePath Project = FPythonEditorModule::GetProjectPythonSourcePath();
 
-	TSharedPtr<FPyScriptTree> ProjectRoot = MakeShareable(new FPyScriptTree());
+	TSharedPtr<FPyScriptModel> MainRoot = MakeShareable(new FPyScriptModel());
 
-	TSharedPtr<FPyScriptTree> RootFolder = MakeShareable(new FPyScriptTree());
-	LinearTree.Add(RootFolder);
-	LinearTree.Add(ProjectRoot);
-
-
-	RootFolder->Path = Project.SourcePath;
-	RootFolder->Type = EScriptTreeType::Root;
-	GetChildrenTree(RootFolder, LinearTree);
-	RootFolder->Name = Project.Name;
+	TSharedPtr<FPyScriptModel> RootProject = MakeShareable(new FPyScriptModel());
+	LinearTree.Add(RootProject);
+	LinearTree.Add(MainRoot);
 
 
-	ProjectRoot->Children.Add(RootFolder);
+	RootProject->Path = Project.SourcePath;
+	RootProject->Type = EScriptTreeType::Root;
+	GetChildrenTree(RootProject, LinearTree);
+	RootProject->Name = Project.Name;
+
+	MainRoot->AddChild(RootProject, MainRoot);
+	
 
 	for (auto& Plugin : Project.Plugins)
 	{
-		TSharedPtr<FPyScriptTree> RootPlugin = MakeShareable(new FPyScriptTree());
-		LinearTree.Add(RootPlugin);
-		RootPlugin->Type = EScriptTreeType::Root;
-		if (Plugin.Modules.Num() > 1)
+		for (auto& Module : Plugin.Modules)
 		{
-			for (auto& Module : Plugin.Modules)
-			{
-				TSharedPtr<FPyScriptTree> RootModule = MakeShareable(new FPyScriptTree());
-				LinearTree.Add(RootModule);
-				RootModule->Path = Module.SourcePath;
-				RootModule->Type = EScriptTreeType::Root;
-				GetChildrenTree(RootModule, LinearTree);
-				RootModule->Name = Module.ModuleName;
-				RootPlugin->Children.Add(RootModule);
-			}
-		}
-		else
-		{
-			RootPlugin->Path = Plugin.Modules[0].SourcePath;
-			GetChildrenTree(RootPlugin, LinearTree);
-			RootPlugin->Name = Plugin.PluginName;
-		}
+			TSharedPtr<FPyScriptModel> RootModule = MakeShareable(new FPyScriptModel());
+			LinearTree.Add(RootModule);
+			RootModule->Path = Module.SourcePath;
+			RootModule->Type = EScriptTreeType::Root;
+			GetChildrenTree(RootModule, LinearTree);
+			RootModule->Name = Module.ModuleName;
 
-		RootPlugin->Name = Plugin.PluginName;
-		ProjectRoot->Children.Add(RootPlugin);
+			MainRoot->AddChild(RootModule, MainRoot);
+		}
 	}
-
 	
-	ScriptTree->GetExpandedItems(ExpandedItems);
+	ScriptTreeView->GetExpandedItems(ExpandedItems);
 
 	Items.Empty();
-	RootDirectory = ProjectRoot->Children;
-	ScriptTree->RequestTreeRefresh();
+	RootDirectory = MainRoot->Children;
+	ScriptTreeView->RequestTreeRefresh();
 
 	for (auto& Elem : LinearTree)
 	{
@@ -208,7 +200,7 @@ void SPythonFileBrowser::Update()
 		{
 			if (Elem->Name == Expanded->Name && Elem->Path == Expanded->Path)
 			{
-				ScriptTree->SetItemExpansion(Elem, true);
+				ScriptTreeView->SetItemExpansion(Elem, true);
 				continue;
 			}
 		}
@@ -289,18 +281,22 @@ void SPythonFileBrowser::FindInExplorer()
 
 void SPythonFileBrowser::OnSearchBoxChanged(const FText& Text)
 {
-
+	FilterHandler->SetIsEnabled(!Text.IsEmpty());
+	SearchBoxPyFilter->SetRawFilterText(Text);
+	SearchBox->SetError(SearchBoxPyFilter->GetFilterErrorText());
+	FilterHandler->RefreshAndFilterTree();
 }
 
 void SPythonFileBrowser::OnSearchBoxCommitted(const FText& Text, ETextCommit::Type TextCommitType)
 {
-
+	OnSearchBoxChanged(Text);
 }
 
-void SPythonFileBrowser::OnExpansionChanged(TSharedPtr<FPyScriptTree> Item, bool bValue)
+void SPythonFileBrowser::OnExpansionChanged(TSharedPtr<FPyScriptModel> Item, bool bValue)
 {
-	TSet<TSharedPtr<FPyScriptTree>> ExpandedItemsToSave;
-	ScriptTree->GetExpandedItems(ExpandedItemsToSave);
+	//~ Save temporally expanded tree to PythonProject object to load in another session
+	TSet<TSharedPtr<FPyScriptModel>> ExpandedItemsToSave;
+	ScriptTreeView->GetExpandedItems(ExpandedItemsToSave);
 
 	UPythonProject* PythonProject = GetMutableDefault<UPythonProject>();
 	check(PythonProject);
@@ -313,7 +309,31 @@ void SPythonFileBrowser::OnExpansionChanged(TSharedPtr<FPyScriptTree> Item, bool
 	PythonProject->SaveConfig();
 }
 
-TSharedRef<ITableRow> SPythonFileBrowser::OnGenerateRow(TSharedPtr<FPyScriptTree> Item, const TSharedRef<STableViewBase>& OwnerTable)
+void SPythonFileBrowser::TransformScriptToString(TSharedPtr<FPyScriptModel> Script, OUT TArray< FString >& Array)
+{
+	Array.Add(Script->Name);
+}
+
+void SPythonFileBrowser::WidgetHierarchy_OnGetChildren(TSharedPtr<FPyScriptModel> InParent, TArray< TSharedPtr<FPyScriptModel> >& OutChildren)
+{
+	UE_LOG(LogTemp, Warning, TEXT("%s"), *InParent->Name);
+	for (auto& model : OutChildren)
+	{
+		UE_LOG(LogTemp, Warning, TEXT("%s"), *model->Name);
+	}
+}
+
+void SPythonFileBrowser::RebuldTreeView()
+{
+	float OldScrollOffset = 0.0f;
+	if (ScriptTreeView.IsValid())
+	{
+		OldScrollOffset = ScriptTreeView->GetScrollOffset();
+	}
+
+}
+
+TSharedRef<ITableRow> SPythonFileBrowser::OnGenerateRow(TSharedPtr<FPyScriptModel> Item, const TSharedRef<STableViewBase>& OwnerTable)
 {
 	check(Item.IsValid());
 
@@ -324,33 +344,33 @@ TSharedRef<ITableRow> SPythonFileBrowser::OnGenerateRow(TSharedPtr<FPyScriptTree
 
 	Items.Add(BrowserItem);
 
-	return 	SNew(STableRow<TSharedPtr<FPyScriptTree>>, OwnerTable)
+	return 	SNew(STableRow<TSharedPtr<FPyScriptModel>>, OwnerTable)
 		.Padding(0)
 		[
 			BrowserItem->AsShared()
 		];
 }
 
-void SPythonFileBrowser::OnGetChildren(TSharedPtr<FPyScriptTree> Item, TArray<TSharedPtr<FPyScriptTree>>& OutChildren)
+void SPythonFileBrowser::OnGetChildren(TSharedPtr<FPyScriptModel> Item, TArray<TSharedPtr<FPyScriptModel>>& OutChildren)
 {
 	check(Item.IsValid());
 	OutChildren = Item->Children;
 }
 
 	
-void SPythonFileBrowser::CloseFile(TSharedPtr<FPyScriptTree> ScriptToClose)
+void SPythonFileBrowser::CloseFile(TSharedPtr<FPyScriptModel> ScriptToClose)
 {
 	FPythonEditorToolKit::Get()->CloseOrDeleteFile(ScriptToClose);
 }
 
-TSharedPtr<FPyScriptTree> SPythonFileBrowser::GetLastSelection()
+TSharedPtr<FPyScriptModel> SPythonFileBrowser::GetLastSelection()
 {
 	return LastSelection;
 }
 
 void SPythonFileBrowser::ClearSelection()
 {
-	ScriptTree->ClearSelection();
+	ScriptTreeView->ClearSelection();
 	for (int32 i = 0; i < Items.Num(); i++)
 	{
 		if (Items[i].IsValid())

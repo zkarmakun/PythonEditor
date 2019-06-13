@@ -10,7 +10,7 @@
 
 
 class UPythonProject;
-class FPyScriptTree;
+class FPyScriptModel;
 class SPythonCodeEditor;
 
 class FAutoCompleteWorker;
@@ -63,13 +63,13 @@ public:
 	void InitCodeEditor(const EToolkitMode::Type Mode, const TSharedPtr< class IToolkitHost >& InitToolkitHost, UPythonProject* CodeProject);
 
 	//~ Get Code from script tree
-	FString GetCode(TSharedPtr<FPyScriptTree> InScript);
+	FString GetCode(TSharedPtr<FPyScriptModel> InScript);
 
 	//~ Close or delete tab
-	void CloseOrDeleteFile(TSharedPtr<FPyScriptTree> InScript);
+	void CloseOrDeleteFile(TSharedPtr<FPyScriptModel> InScript);
 
 	//~ Get selected Python Editor widget
-	TSharedPtr<SPythonCodeEditor> GetCurrentPythonCodeEditor(TSharedPtr<FPyScriptTree> InScript) const;
+	TSharedPtr<SPythonCodeEditor> GetCurrentPythonCodeEditor(TSharedPtr<FPyScriptModel> InScript) const;
 
 	//~ Save current python file in edition
 	virtual void SaveAsset_Execute() override;
@@ -84,29 +84,29 @@ public:
 	virtual void OpenDocs(const FString& Link);
 
 	//~ Creates a new folder
-	virtual void CreateNewScriptFolder(TSharedPtr<FPyScriptTree> ScriptTree, const FString& Name);
+	virtual void CreateNewScriptFolder(TSharedPtr<FPyScriptModel> ScriptTree, const FString& Name);
 
 	//~ Creates a new script
-	virtual void CreateNewScript(TSharedPtr<FPyScriptTree> ScriptTree, const FString& Name);
+	virtual void CreateNewScript(TSharedPtr<FPyScriptModel> ScriptTree, const FString& Name);
 
 	//~ Open tab to edit file
-	virtual void OpenFile(TSharedPtr<FPyScriptTree> ScriptTree);
+	virtual void OpenFile(TSharedPtr<FPyScriptModel> ScriptTree);
 
 	//~ Remove file
-	virtual void DeleteFile(TSharedPtr<FPyScriptTree> ScriptTree);
+	virtual void DeleteFile(TSharedPtr<FPyScriptModel> ScriptTree);
 
 	//~ Close tab
-	virtual void RenameFileOrFolder(TSharedPtr<FPyScriptTree> ScriptTree, const FString& NewName);
+	virtual void RenameFileOrFolder(TSharedPtr<FPyScriptModel> ScriptTree, const FString& NewName);
 
 private:
 	//~ Handler for python editor normal tabs( not for editing a file)
-	TSharedRef<SDockTab> HandleScriptTab(const FSpawnTabArgs& Args, TSharedPtr<FPyScriptTree> Script);
+	TSharedRef<SDockTab> HandleScriptTab(const FSpawnTabArgs& Args, TSharedPtr<FPyScriptModel> Script);
 
 	//~ Retrieves las tab selected when open or change focus of editable script tab
-	void OnTabActive(TSharedRef<SDockTab> Tab, ETabActivationCause Cause, TSharedPtr<FPyScriptTree> Script, TSharedPtr<SPythonCodeEditor> InCodeEditor);
+	void OnTabActive(TSharedRef<SDockTab> Tab, ETabActivationCause Cause, TSharedPtr<FPyScriptModel> Script, TSharedPtr<SPythonCodeEditor> InCodeEditor);
 
 	//~ Retrieves last selection from the python file browser
-	void OnFileBrowserSelectionChanged(TSharedPtr<FPyScriptTree> NewSelection);
+	void OnFileBrowserSelectionChanged(TSharedPtr<FPyScriptModel> NewSelection);
 
 	//~ Check whenever a tab is closed to perform some clean up
 	void OnTabClosed(TSharedRef<SDockTab>, FName ID);
@@ -137,10 +137,10 @@ protected:
 	TMap<FString, TSharedPtr<SPythonCodeEditor>> OpenedScripts;
 
 	//~ Holds the current script we are modifying
-	TSharedPtr<FPyScriptTree> CurrentScript;
+	TSharedPtr<FPyScriptModel> CurrentScript;
 
 	//~ Holds the last file browser selection
-	TSharedPtr<FPyScriptTree> CurrentBroswerScriptSelected;
+	TSharedPtr<FPyScriptModel> CurrentBroswerScriptSelected;
 
 	//~ Holds the last python code editor widget
 	TSharedPtr<SPythonCodeEditor> CurrentCodeEditor;
