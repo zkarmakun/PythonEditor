@@ -151,7 +151,9 @@ void FPythonEditorToolKit::AddReferencedObjects(FReferenceCollector& Collector)
 
 void FPythonEditorToolKit::InitCodeEditor(const EToolkitMode::Type Mode, const TSharedPtr< class IToolkitHost >& InitToolkitHost, UPythonProject* CodeProject)
 {
-	FAssetEditorManager::Get().CloseOtherEditors(CodeProject, this);
+	UAssetEditorSubsystem *sub = GEditor->GetEditorSubsystem<UAssetEditorSubsystem>();
+
+	sub->CloseOtherEditors(CodeProject, this);
 	PythonProject = CodeProject;
 
 	TSharedPtr<FPythonEditorToolKit> ThisPtr(SharedThis(this));

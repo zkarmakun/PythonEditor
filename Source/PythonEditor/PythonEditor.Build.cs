@@ -11,6 +11,25 @@ public class PythonEditor : ModuleRules
 		PublicIncludePaths.AddRange(
 			new string[] {
 				// ... add public include paths required here ...
+				"Runtime/SlateCore/Public/Styling",
+				"Runtime/SlateCore/Public/Widgets",
+				"Runtime/SlateCore/Public/Widgets/Images",
+				"Runtime/SlateCore/Public/Fonts",
+
+				"Runtime/Slate/Public/Widgets",
+				"Runtime/Slate/Public/Widgets/Text",
+				"Runtime/Slate/Public/Widgets/Input",
+				"Runtime/Slate/Public/Widgets/Layout",
+				"Runtime/Slate/Public/Framework/Application",
+
+				"Runtime/Json/Public/Dom",
+				"Runtime/Core/Public/HAL",
+				"Runtime/Core/Public/Misc",
+				"Runtime/Core/Public/Containers",
+				"Runtime/Json/Public/Serialization",
+				"Runtime/Online/HTTP/Public/Interfaces",
+				"Runtime/Projects/Public/Interfaces",
+
 			}
 			);
 				

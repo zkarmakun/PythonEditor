@@ -280,9 +280,9 @@ bool UScriptShelfs::SetButtonIcon(const FName& ShelfID, const FName& ButtonID)
 		}
 
 		// Decompress the image data
-		const TArray<uint8>* RawData = nullptr;
+		TArray<uint8>* RawData = nullptr;
 		ImageWrapper->SetCompressed(FileData.GetData(), FileData.Num());
-		ImageWrapper->GetRaw(ERGBFormat::BGRA, 8, RawData);
+		ImageWrapper->GetRaw(ERGBFormat::BGRA, 8, *RawData);
 		if (RawData == nullptr)
 		{
 			UE_LOG(LogTemp, Error, TEXT("UScriptShelfs::SetButtonIcon Invalid Data"));

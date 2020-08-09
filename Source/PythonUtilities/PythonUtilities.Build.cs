@@ -11,6 +11,21 @@ public class PythonUtilities : ModuleRules
 		PublicIncludePaths.AddRange(
 			new string[] {
 				// ... add public include paths required here ...
+				"Runtime/SlateCore/Public/Styling",
+				"Runtime/SlateCore/Public/Widgets",
+				"Runtime/SlateCore/Public/Widgets/Images",
+				
+				"Runtime/Slate/Public/Widgets",
+				"Runtime/Slate/Public/Widgets/Text",
+				"Runtime/Slate/Public/Widgets/Input",
+				"Runtime/Slate/Public/Widgets/Layout",
+				"Runtime/Slate/Public/Framework/Views",
+				"Runtime/Slate/Public/Framework/MultiBox",
+				"Runtime/Slate/Public/Framework/Application",
+
+				"Runtime/Core/Public/Modules",
+				"Runtime/CoreUObject/Public/UObject",
+				"Editor/UnrealEd/Public/Kismet2",
 			}
 			);
 				
